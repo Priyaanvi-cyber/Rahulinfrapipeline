@@ -1,0 +1,37 @@
+trigger:
+ branches:
+   include:
+     - main
+
+pool: pipeline pool
+ 
+stages:
+  - stage: Terraform
+    displayName: Terraform Infra Pipeline
+    jobs:
+      - job: terraformjob 
+        displayName: Terraform init plan
+        steps:
+        - task: TerraformInstaller@1
+          inputs:
+            terraformVersion: 'latest'
+        - task: TerraformTask@5
+          inputs:
+            provider: 'azurerm'
+            command: 'init'
+            backendServiceArm: 'devopsconnection'
+            backendAzureRmResourceGroupName: 'rgpipeline'
+            backendAzureRmStorageAccountName: 'stg123pipeline'
+            backendAzureRmContainerName: 'contpipeline'
+            backendAzureRmKey: 'terraform.tfstate'
+        - task: TerraformTask@5
+          inputs:
+            provider: 'azurerm'
+            command: 'plan'
+            environmentServiceNameAzureRM: 'devopsconnection'
+        - task: TerraformTask@5
+          inputs:
+            provider: 'azurerm'
+            command: 'apply'
+            commandOptions: '-auto-approve'
+            environmentServiceNameAzureRM: 'devopsconnection'
